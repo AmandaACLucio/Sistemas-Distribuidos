@@ -44,7 +44,7 @@ bool Primo(int numero){
 }
 
 
-int Produtor(){
+void Produtor(){
 
 }
 
@@ -54,5 +54,63 @@ int Consumidor(){
 }
 
 int main(){
+
+//fork cria dois processos e cada processo roda uma função
+
+    pid_t pid;
+
+    int descritoresPipe[2], numeroAleatorio=0;
+    //descritoresPipe[0] - leitura do pipe
+    //descritoresPipe[1] - escrita no pipe
+
+    //Criando o pipe e colocando em um if para caso gere erro
+    if(pipe(descritoresPipe)){
+        printf ("Falha na criação do Pipe.\n");
+        return ERRO;
+    }
+
+    //Para gerar um novo processo é realizado um fork
+    //if para detectar falhas
+
+    pid = fork ();
+    
+    if (pid < 0){
+        printf ("Falha no fork.");
+        return ERRO;
+    }
+
+    //Trecho que o filho executa
+    else if(pid==0){
+
+        srand(time(NULL));
+        numeroAleatorio = rand() % 100;
+        printf("O número Aleatório gerado é %d \n", numeroAleatorio);
+        
+        //Escreve para o pai o número gerado informando seu tamanho
+        write (descritoresPipe[1],&numeroAleatorio, sizeof(numeroAleatorio));
+
+        //Processo filho fecha ponta de leitura
+        close (descritoresPipe[0]);
+
+        _exit(0);
+
+    }
+    //Trecho que o pai executa
+    else{
+
+        // Proceso pai fecha ponta aberta do pipe
+        close (descritoresPipe[1]);
+
+        // Lê o que filho escreveu através do pipe
+        read(descritoresPipe[0], &numeroAleatorio, sizeof(numeroAleatorio));
+        //*comandoParaExecutar=numeroAleatorio;
+
+        printf("O número Aleatório lido é %d \n", numeroAleatorio);
+
+        wait(NULL); //esperando filho
+        return 0;
+    }
+
+
 
 }

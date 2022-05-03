@@ -12,6 +12,9 @@ int main(){
     pid = getpid(); //getpid retorna pid do processo chamado
     printf("Pid é %d \n",pid); //exibindo pid
 
+    int a;
+    scanf("%d", &a);
+
     while(1){
 
     }

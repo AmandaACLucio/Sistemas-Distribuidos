@@ -11,9 +11,12 @@
 
 int enviaSinal(pid_t pidDestino, int signal){
 
+    printf("Enviando sinal\n");
+
     if (getpgid(pidDestino) >= 0) {
         printf("Processo existe\n");
         kill(pidDestino, signal);
+        printf("Sinal enviado\n");
         sleep(2);
         return 0;
     
@@ -26,6 +29,8 @@ int enviaSinal(pid_t pidDestino, int signal){
 
 int recebeSinal(){
 
+    printf("Recebendo sinal\n");
+
     pid_t pid;
     pid = getpid(); //getpid retorna pid do processo chamado
     printf("Pid é %d \n",pid); //exibindo pid
@@ -35,6 +40,7 @@ int recebeSinal(){
     
     int opcaoWhile, sinalEsperado, sinal;
     int *sinalptr = &sinal; //ponteiro utilizado em sigwait para receber o valor do sinal recebido
+    
     opcaoWhile=0;
 
     //esvaziando máscara
@@ -69,8 +75,6 @@ int recebeSinal(){
             }else if(*sinalptr == SIGTERM){
                 printf("SIGTERM foi recebido, logo o processo irá terminar\n");
                 opcaoWhile =3;
-                //int matarProcesso;
-                //matarProcesso =  kill(pid, 9);
             }
         }
     }
@@ -80,13 +84,46 @@ int recebeSinal(){
 
 int main(){
     
+    int opcao;
+
+    printf("Olá usuário! Nosso programa recebe e envia sinais!\n");
+
+    printf("Você gostaria de receber ou enviar sinais?\n");
+
+    printf("1 - Receber\n2 - Enviar\n");
+
+    scanf("%d", &opcao);
+    switch (opcao)
+    {
+    case 1:
+        recebeSinal();
+    case 2:;
+     
+        int pidDestino;
+        int sinal;
+
+        printf("Qual o pid de Destino?\n");
+        scanf("%d", &pidDestino);
+
+        printf("Digite o número do  sinal desejado:\n");
+        printf("10 - SIGUSR1; 12 - SIGUSR2; 15 - SIGTERM\n");
+        scanf("%d", &sinal);
+
+        
+        enviaSinal(pidDestino,sinal);
+        break;    
+    default:
+
+        break;
+    }
+
     ///Decidir se recebe sinal ou envia 
     
     /*pid_t pidDestino;
     pidDestino = 101513;
     
     enviaSinal(pidDestino, 15);*/
-    recebeSinal();
+    
 
 
 }
