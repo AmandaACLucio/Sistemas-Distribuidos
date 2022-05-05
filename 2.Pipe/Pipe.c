@@ -7,30 +7,9 @@
 #include <sys/wait.h>
 #include <sys/stat.h>
 #include <stdbool.h>
+#include <math.h>
 #define ERRO               1
-
-/* Implemente o programa Produtor-Consumidor como vimos em aula com dois processos que
-utilizam pipes (anonymous pipes, para ser mais preciso) para fazer a comunica ̧c ̃ao. 
-O programa
-produtor deve gerar n ́umeros inteiros aleat ́orios e crescentes, da seguinte forma: Ni = Ni−1 + ∆,
-onde N0 = 1 e ∆  ́e um valor aleat ́orio entre 1 e 100. 
-
-O programa consumidor deve receber o
-n ́umero e verificar se o mesmo  ́e primo, imprimindo o resultado no terminal. 
-
-Seu programa
-deve primeiramente criar um pipe e depois fazer um fork() para duplicar o processo, de forma
-que os dois processos (pai e filho) tenham as duas duas respectivas pontas do pipe (write end
-e read end). 
-
-O processo consumidor deve terminar quando receber o n ́umero 0. O programa produtor tem como 
-parˆametro o n ́umero de n ́umeros a serem gerados (ex. 1000), depois do qual
-o n ́umero zero  ́e enviado, e o produtor termina execu ̧c ̃ao.
-Cuidado com a representa ̧c ̃ao num ́erica atrav ́es do pipe! Dica: converta o n ́umero para uma
-string de tamanho fixo, ex. 20 bytes. Escreva e leia do pipe este mesmo n ́umero de bytes, para
-cada mensagem. Teste o seu programa mostrando seu funcionamento para alguns casos
-
-*/
+#define BUFFER_TAMANHO     20
 
 bool Primo(int numero){
      if (numero <= 1) return false;
@@ -43,25 +22,86 @@ bool Primo(int numero){
      return true;
 }
 
+int Delta(){
+    return rand()%100+1;
+}
 
-void Produtor(){
+int Produtor(int Pipe[], int totalProdutos){
+
+    //Pipe -- 0-read -- 1-write
+
+
+    char Msg_Produtor[BUFFER_TAMANHO];
+    int qntProdutos = 1;
+
+	close(Pipe[0]);  //fechando ponta de leitura                       
+	while(totalProdutos > 0)
+	{
+    
+
+		printf("Produtor escrevendo %d\n", qntProdutos);
+		sprintf(Msg_Produtor, "%d", qntProdutos);
+        qntProdutos += Delta();
+		write(Pipe[1], &Msg_Produtor, sizeof(Msg_Produtor));
+		totalProdutos--;
+		
+	}
+
+    
+	sprintf(Msg_Produtor, "%d", 0);
+	write(Pipe[1], &Msg_Produtor, sizeof(Msg_Produtor));   
+	close(Pipe[1]);//fechando ponta de escrita
+
+	wait(NULL);                                       
+    return 0;
 
 }
 
 
-int Consumidor(){
+int Consumidor(int Pipe[]){
 
+    close(Pipe[1]);
+
+    char Msg_Consumidor[BUFFER_TAMANHO];
+    int recebido = 0;
+    int executando = 1;
+
+    while(executando){
+
+
+        read(Pipe[0], &Msg_Consumidor, sizeof(char)*BUFFER_TAMANHO);
+        recebido = atoi(Msg_Consumidor);
+
+        if(recebido==0){
+            executando=0;
+        }else{
+            dprintf(STDOUT_FILENO,"%d %s",recebido,Primo(recebido)?" é primo\n":"não é primo\n" );            
+        }
+
+    }
+
+    close(Pipe[0]);                       
+    //_exit(0);
+    return 0;
 }
 
 int main(){
 
-//fork cria dois processos e cada processo roda uma função
+    //fork cria dois processos e cada processo roda uma função
 
     pid_t pid;
 
-    int descritoresPipe[2], numeroAleatorio=0;
+    int totalProdutos=0;
+    int descritoresPipe[2];
     //descritoresPipe[0] - leitura do pipe
     //descritoresPipe[1] - escrita no pipe
+
+
+    printf("Esse programa produz e consome produtos através do pipe!\n");
+
+    printf("Quantos produtos você gostaria de gerar?\n");
+
+    scanf("%d", &totalProdutos);
 
     //Criando o pipe e colocando em um if para caso gere erro
     if(pipe(descritoresPipe)){
@@ -73,44 +113,24 @@ int main(){
     //if para detectar falhas
 
     pid = fork ();
-    
+    srand(time(NULL));
+
+
     if (pid < 0){
-        printf ("Falha no fork.");
+        printf ("Falha no fork.\n");
         return ERRO;
     }
 
     //Trecho que o filho executa
     else if(pid==0){
-
-        srand(time(NULL));
-        numeroAleatorio = rand() % 100;
-        printf("O número Aleatório gerado é %d \n", numeroAleatorio);
-        
-        //Escreve para o pai o número gerado informando seu tamanho
-        write (descritoresPipe[1],&numeroAleatorio, sizeof(numeroAleatorio));
-
-        //Processo filho fecha ponta de leitura
-        close (descritoresPipe[0]);
-
-        _exit(0);
-
+        Consumidor(descritoresPipe);
     }
     //Trecho que o pai executa
     else{
+        Produtor(descritoresPipe, totalProdutos);
 
-        // Proceso pai fecha ponta aberta do pipe
-        close (descritoresPipe[1]);
-
-        // Lê o que filho escreveu através do pipe
-        read(descritoresPipe[0], &numeroAleatorio, sizeof(numeroAleatorio));
-        //*comandoParaExecutar=numeroAleatorio;
-
-        printf("O número Aleatório lido é %d \n", numeroAleatorio);
-
-        wait(NULL); //esperando filho
-        return 0;
     }
 
-
+    return 0;
 
 }

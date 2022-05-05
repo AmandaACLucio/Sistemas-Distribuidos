@@ -11,7 +11,7 @@ TARGET = Pipe
 all: $(TARGET)
 
 $(TARGET): $(TARGET).c
-	$(CC) $(CFLAGS) -o $(TARGET) $(TARGET).c
+	$(CC) $(CFLAGS) -o $(TARGET) $(TARGET).c -lm
 
 clean:
 	$(RM) $(TARGET)

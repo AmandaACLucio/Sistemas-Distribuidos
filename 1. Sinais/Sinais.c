@@ -86,7 +86,7 @@ int main(){
     
     int opcao;
 
-    printf("Olá usuário! Nosso programa recebe e envia sinais!\n");
+    printf("Esse programa recebe e envia sinais!\n");
 
     printf("Você gostaria de receber ou enviar sinais?\n");
 
