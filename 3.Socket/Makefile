@@ -6,7 +6,7 @@ CC = gcc
 CFLAGS  = -Wall
 
 # the build target executable:
-TARGET = Socket
+TARGET = cliente
 
 all: $(TARGET)
 
