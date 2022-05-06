@@ -8,6 +8,22 @@
 #include <sys/stat.h>
 #define ERRO               1
 
+void signal_handler(int signal) {
+
+    switch (signal) {
+        case SIGUSR1:
+            printf("Sinal SIGUSR1 recebido\n");
+            break;
+        case SIGUSR2:
+            printf("Sinal SIGUSR2 recebido\n");
+            break;
+        case SIGQUIT:
+            printf("Sinal SIGQUIT recebido, logo o processo irá terminar\n");
+            exit(0);
+            break;
+    }
+}
+
 
 int enviaSinal(pid_t pidDestino, int signal){
 
@@ -27,7 +43,7 @@ int enviaSinal(pid_t pidDestino, int signal){
     }
 }
 
-int recebeSinal(){
+int recebeSinal(int tipoWait){
 
     printf("Recebendo sinal\n");
 
@@ -35,48 +51,16 @@ int recebeSinal(){
     pid = getpid(); //getpid retorna pid do processo chamado
     printf("Pid é %d \n",pid); //exibindo pid
 
-    sigset_t sigset; //máscara (set) do tipo sigset_t que será passada como parâmetro para bloqueadores
+    signal(SIGUSR1, signal_handler);
+    signal(SIGUSR2, signal_handler);
+    signal(SIGQUIT, signal_handler);
 
-    
-    int opcaoWhile, sinalEsperado, sinal;
-    int *sinalptr = &sinal; //ponteiro utilizado em sigwait para receber o valor do sinal recebido
-    
-    opcaoWhile=0;
-
-    //esvaziando máscara
-    sigemptyset(&sigset);
-
-    //adicionado na máscara para sigwait bloquear
-    sigaddset(&sigset, SIGUSR1);
-    sigaddset(&sigset, SIGUSR2);
-    sigaddset(&sigset, SIGTERM);
-
-    //sigprocmask permite continuar processo msm após receber um dos sinais
-    sigprocmask( SIG_BLOCK, &sigset, NULL );
-
-    while(opcaoWhile !=3){
-
-        //variável registra sinal recebido e bloqueado
-        sinalEsperado = sigwait(&sigset, sinalptr);
-
-        if(sinalEsperado == -1){
-            printf("Erro em sigwait\n");
-            return 1;
-        }else {
-            //SIGUSR1 recebido
-            if(*sinalptr == SIGUSR1){
-                printf("Sinal SIGUSR1\n");
-            
-            //SIGUSR2 recebido
-            }else if(*sinalptr == SIGUSR2){
-                printf("Sinal SIGUSR2\n");
-            
-             //SIGTERM recebido           
-            }else if(*sinalptr == SIGTERM){
-                printf("SIGTERM foi recebido, logo o processo irá terminar\n");
-                opcaoWhile =3;
-            }
-        }
+    if (tipoWait == 0) {
+        while (1); // busy wait
+    }else {
+        while(1){ 
+            pause(); 
+        } // blocking wait
     }
 
     return 0;
@@ -95,8 +79,18 @@ int main(){
     scanf("%d", &opcao);
     switch (opcao)
     {
-    case 1:
-        recebeSinal();
+    case 1:;
+
+        int tipoWait;
+
+        printf("Digite 0 para busy wait ou 1 para blocking wait:\n");
+
+        scanf("%d", &tipoWait);
+
+        recebeSinal(tipoWait);
+
+        break;
+
     case 2:;
      
         int pidDestino;
@@ -106,7 +100,7 @@ int main(){
         scanf("%d", &pidDestino);
 
         printf("Digite o número do  sinal desejado:\n");
-        printf("10 - SIGUSR1; 12 - SIGUSR2; 15 - SIGTERM\n");
+        printf("10 - SIGUSR1; 12 - SIGUSR2; 3 - SIGQUIT (Finaliza o programa)\n");
         scanf("%d", &sinal);
 
         
@@ -124,6 +118,6 @@ int main(){
     
     enviaSinal(pidDestino, 15);*/
     
-
+    return 0;
 
 }
