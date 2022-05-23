@@ -76,7 +76,7 @@ void Consume(){
     if(position_busy!=-1){
 
         int number_rand=vectorN[position_busy];
-        //dprintf(STDOUT_FILENO,"%d %s",number_rand,Primo(number_rand)?" é primo\n":"não é primo\n" ); 
+        dprintf(STDOUT_FILENO,"%d %s",number_rand,Primo(number_rand)?" é primo\n":"não é primo\n" ); 
         
         vectorN[position_busy]=0;//liberando a posição           
 
@@ -120,7 +120,6 @@ void *Consumidor(void *arg){
             consumed++;
         }else{
             continueConsume=0;
-            sem_post(&semMain);
         }
 
         sem_post(&semMutex);
@@ -194,17 +193,16 @@ int main(int argc, char* argv[]) {
 	timeExecution = clock() - timeExecution;
     double timeExecutionSeconds = ((double) timeExecution)/CLOCKS_PER_SEC;
 
+
     //create csv
 
     FILE *fpt;
-    fpt = fopen("Results.csv", "a+");
-    //fprintf(fpt,"time, Np, Nc, N\n");
+    fpt = fopen("Results.csv", "w+");
+    fprintf(fpt,"time, Np, Nc, N\n");
 
-    fprintf(fpt, "%lf, %d, %d, %d\n", timeExecutionSeconds, Np, Nc, sizeN);
+    fprintf(fpt, "%lf, %d, %d, %d", timeExecutionSeconds, Np, Nc, sizeN);
 
     fclose(fpt);
-
-	return 0;
 
 	return 0;
 }
