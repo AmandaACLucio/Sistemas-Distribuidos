@@ -178,13 +178,14 @@ int main(int argc, char* argv[]) {
     UnloadMemory();
 
     //criando threads
+    int posNc = 0;
     
-	for(int posNc =0 ; posNc < Nc;posNc++){
+	for(posNc =0 ; posNc < Nc;posNc++){
 		pthread_create(&threadWork,NULL,Consumidor,NULL);
 		list_threads[posNc] = threadWork;
 	}
 
-	for(int posNp=0; posNp < Np;posNp++){
+	for(int posNp=posNc; posNp < Np;posNp++){
 		pthread_create(&threadWork,NULL,Produtor,NULL);
 		list_threads[posNp] = threadWork;
 	}
