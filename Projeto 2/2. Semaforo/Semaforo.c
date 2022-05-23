@@ -1,13 +1,24 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <time.h>
-#include <stdbool.h>
-#include <math.h>
 #include <pthread.h>
 #include <semaphore.h> 
-#define ERRO               1
-#define BUFFER_TAMANHO     20
+#include <stdbool.h>
+#include <unistd.h>
+
+
+sem_t semMutex;
+sem_t semFull;
+sem_t semEmpty;
+sem_t semMain;
+
+int *vectorN; //vector shared memory
+int sizeN;
+int objectiveProduction=100000;
+int produced; 
+int consumed;
+int continueProduction=1;
+int continueConsume=1; 
 
 bool Primo(int numero){
      if (numero <= 1) return false;
@@ -21,114 +32,172 @@ bool Primo(int numero){
 }
 
 int Delta(){
-    return rand()%100+1;
+    return rand()%10000001;
 }
 
-int Produtor(int Pipe[], int totalProdutos){
+int findPositionFree(int *vectorShared){
 
-    //Pipe -- 0-read -- 1-write
+    for(int i = 0; i < sizeN; i++){
+        if(vectorShared[i] ==0){
+            return i;
+        }
+    }
 
+    return -1; //não tem posição vazia
+}
 
-    char Msg_Produtor[BUFFER_TAMANHO];
-    int qntProdutos = 1;
+int findPositionBusy(int *vectorShared){
 
-	close(Pipe[0]);  //fechando ponta de leitura                       
-	while(totalProdutos > 0)
-	{
-    
+    for(int i = 0; i < sizeN; i++){
+        if(vectorShared[i] !=0){
+            return i;
+        }
+    }
 
-		printf("Produtor escrevendo %d\n", qntProdutos);
-		sprintf(Msg_Produtor, "%d", qntProdutos);
-        qntProdutos += Delta();
-		write(Pipe[1], &Msg_Produtor, sizeof(Msg_Produtor));
-		totalProdutos--;
-		
-	}
+    return -1; //não tem posição vazia
+}
 
-    
-	sprintf(Msg_Produtor, "%d", 0);
-	write(Pipe[1], &Msg_Produtor, sizeof(Msg_Produtor));   
-	close(Pipe[1]);//fechando ponta de escrita
+void Produce(){
 
-	wait(NULL);                                       
-    return 0;
+    int number_rand = Delta();
+    int position_free = findPositionFree(vectorN);
+
+    if(position_free!=-1){
+
+        vectorN[position_free]=number_rand;
+    }
 
 }
 
+void Consume(){
 
-int Consumidor(int Pipe[]){
+    int position_busy = findPositionBusy(vectorN);
 
-    close(Pipe[1]);
+    if(position_busy!=-1){
 
-    char Msg_Consumidor[BUFFER_TAMANHO];
-    int recebido = 0;
-    int executando = 1;
+        int number_rand=vectorN[position_busy];
+        dprintf(STDOUT_FILENO,"%d %s",number_rand,Primo(number_rand)?" é primo\n":"não é primo\n" ); 
+        
+        vectorN[position_busy]=0;//liberando a posição           
 
-    while(executando){
+    }
 
+}
 
-        read(Pipe[0], &Msg_Consumidor, sizeof(char)*BUFFER_TAMANHO);
-        recebido = atoi(Msg_Consumidor);
+void *Produtor(void *arg){
 
-        if(recebido==0){
-            executando=0;
+    printf("%s", "entrei no produtor");
+
+    while(continueProduction){
+
+        sem_wait(&semEmpty);
+        sem_wait(&semMutex);
+
+        if(produced<objectiveProduction){
+
+            Produce();
+            produced++;
         }else{
-            dprintf(STDOUT_FILENO,"%d %s",recebido,Primo(recebido)?" é primo\n":"não é primo\n" );            
+            continueProduction=0;
         }
 
+        sem_post(&semMutex);
+        sem_post(&semFull);
     }
 
-    close(Pipe[0]);                       
-    //_exit(0);
-    return 0;
+
 }
 
-int main(){
+void *Consumidor(void *arg){
 
-    //fork cria dois processos e cada processo roda uma função
+    printf("%s", "entrei no consumidor");
+    while(continueConsume){
 
-    pid_t pid;
-
-    int totalProdutos=0;
-    int descritoresPipe[2];
-    //descritoresPipe[0] - leitura do pipe
-    //descritoresPipe[1] - escrita no pipe
+        sem_wait(&semFull);
+        sem_wait(&semMutex);
 
 
-    printf("Esse programa produz e consome produtos através do pipe!\n");
+        if(consumed<objectiveProduction){
 
-    printf("Quantos produtos você gostaria de gerar?\n");
+            Consume();
+            consumed++;
+        }else{
+            continueConsume=0;
+        }
 
-    scanf("%d", &totalProdutos);
+        sem_post(&semMutex);
+        sem_post(&semEmpty);
 
-    //Criando o pipe e colocando em um if para caso gere erro
-    if(pipe(descritoresPipe)){
-        printf ("Falha na criação do Pipe.\n");
-        return ERRO;
     }
+}
 
-    //Para gerar um novo processo é realizado um fork
-    //if para detectar falhas
+void UnloadMemory(){
+    for(int i = 0; i < sizeN; i++){
+        vectorN[i]=0;
+    }
+}
 
-    pid = fork ();
+int main(int argc, char* argv[]) {
+
     srand(time(NULL));
+    int totalThreads, Np, Nc;
+
+    //console
+    /*
+    printf("Esse programa consome e produz números de uma memória compartilhada!\n");
+
+    printf("Digite o valor para Np (número de threads do produtor):\n");
+    scanf("%d", &Np);
+
+    printf("Digite o valor para Nc (número de threads do consumidor):\n");
+    scanf("%d", &Nc);
+
+    printf("Digite o valor para o tamanho de N:\n");
+    scanf("%d", &sizeN);
+    */
 
 
-    if (pid < 0){
-        printf ("Falha no fork.\n");
-        return ERRO;
-    }
+	sizeN = atoi(argv[1]); // tamanho de N
+	int Nc = atoi(argv[2]);  // número de threads do consumidor
+	int Np = atoi(argv[3]);  // número de threads do produtor
+	
+    pthread_t threadWork;
+	
+    sem_init(&semEmpty,0,sizeN);
+	sem_init(&semFull,0,0);
+	sem_init(&semMutex,0,1);
+	sem_init(&semMain,0,0);
 
-    //Trecho que o filho executa
-    else if(pid==0){
-        Consumidor(descritoresPipe);
-    }
-    //Trecho que o pai executa
-    else{
-        Produtor(descritoresPipe, totalProdutos);
+	// Medida de tempo
+	clock_t timeExecution; 
+	timeExecution = clock();  
 
-    }
+    //vetor de threads
+    totalThreads = Np+Nc;
+    pthread_t list_threads[totalThreads];
 
-    return 0;
+    vectorN =  (int*) malloc(sizeN*sizeof(int));
+    UnloadMemory();
 
+    //criando threads
+    
+	for(int posNc =0 ; posNc < Nc;posNc++){
+		pthread_create(&threadWork,NULL,Consumidor,NULL);
+		list_threads[posNc] = threadWork;
+	}
+
+	for(int posNp=0; posNp < Np;posNp++){
+		pthread_create(&threadWork,NULL,Produtor,NULL);
+		list_threads[posNp] = threadWork;
+	}
+
+	sem_wait(&semMain);//bloquea a main enquanto o p/c ainda atua
+
+	timeExecution = clock() - timeExecution;
+    double timeExecutionSeconds = ((double) timeExecution)/CLOCKS_PER_SEC;
+
+    printf("%lf", timeExecutionSeconds);
+
+	return 0;
 }
+

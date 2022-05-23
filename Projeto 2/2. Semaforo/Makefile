@@ -11,7 +11,7 @@ TARGET = Semaforo
 all: $(TARGET)
 
 $(TARGET): $(TARGET).c
-	$(CC) $(CFLAGS) -o $(TARGET) $(TARGET).c -lm
+	$(CC) $(CFLAGS) -o $(TARGET) $(TARGET).c -lm -lpthread
 
 clean:
 	$(RM) $(TARGET)
