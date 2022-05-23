@@ -1,63 +1,48 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import os
 
-
-def set_index(np: int, nc: int) -> int:
+def choose_tuple(np, nc):
 
     result = {(1, 1): 0, (1, 2): 1, (1, 4): 2, (1, 8): 3, (1, 16): 4, (2, 1): 5, (4, 1): 6, (8, 1): 7, (16, 1): 8}
 
     return result[(np, nc)]
 
 
-def parse_csv(data_file: str) -> pd.DataFrame:
-    """Access the generated csv by the bash and treats it.
-    Args:
-        data_file (str): the path to the csv.
-    Returns:
-        pd.DataFrame: a pandas dataframe containing the treated data
-    """
-    df = pd.read_csv(data_file)
-    df = df.groupby(['n', 'np', 'nc']).mean().reset_index()
+def dataframe_csv(data_file):
 
-    df['graph_index'] = df.apply(lambda x: set_index(
-        np=x['np'], nc=x['nc']), axis=1)
+    df = pd.read_csv(data_file)
+
+    df = df.groupby([ 'Np', 'Nc', 'N']).mean().reset_index()
+
+    df['graph_index'] = df.apply(lambda x: choose_tuple(
+        np=x['Np'], nc=x['Nc']), axis=1)
 
     return df
 
 
-def save_graph(image: pd.DataFrame, name: str) -> None:
-    """ Receives a figure as dataframe and saves it as a png file
-    Args:
-        image (pd.DataFrame): the figure dataframe
-        name (str): the figure name
-    """
+def save_graph(image, name):
+
     image.get_figure().savefig(f'{name}.png')
 
 
-def build_graph(df: pd.DataFrame) -> pd.DataFrame:
-    """Receives a pandas dataframe and builds a graph of time x Number of threads parametrized
-    Args:
-        df (pd.DataFrame): the treated dataframe
-    Returns:
-        pd.DataFrame: the graph as dataframe
-    """
+def build_graph(df):
 
-    fig = df.pivot(index='graph_index', columns='n',
-                   values='time').plot(title="Gráfico de Tempo x Número de Threads Produtor/Consumidor")
-    fig.set_xlabel("Thread Produtor/Consumidor parametrizadas")
+    fig = df.pivot(index='graph_index', columns='N',
+                   values='time').plot(title="Número de Threads x Tempo")
+    fig.set_xlabel("Np/Ns")
     fig.set_ylabel("Tempo (s)")
     return fig
 
-print(set_index(1,1))
-'''
-
 if __name__ == "__main__":
 
-    data_file = 'Results.csv'
+    data_file = './Results.csv'
+    data_file = os.path.join(os.path.dirname(__file__), data_file)
 
-    df = parse_csv(data_file)
+
+    df = dataframe_csv(data_file)
 
     image = build_graph(df)
 
-    save_graph(image, "result")'''
+    save_graph(image, "result")
