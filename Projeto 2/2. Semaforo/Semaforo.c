@@ -1,13 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <signal.h>
 #include <unistd.h>
 #include <time.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <sys/stat.h>
 #include <stdbool.h>
 #include <math.h>
+#include <pthread.h>
+#include <semaphore.h> 
 #define ERRO               1
 #define BUFFER_TAMANHO     20
 
