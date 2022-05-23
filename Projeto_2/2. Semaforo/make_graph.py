@@ -24,7 +24,7 @@ def dataframe_csv(data_file):
 
 def save_graph(image, name):
 
-    image.get_figure().savefig(f'{name}.png')
+    image.get_figure().savefig(f'./Projeto_2/2. Semaforo/ {name}.png')
 
 
 def build_graph(df):
