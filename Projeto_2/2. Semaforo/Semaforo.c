@@ -199,7 +199,6 @@ int main(int argc, char* argv[]) {
 
     FILE *fpt;
     fpt = fopen("Results.csv", "a+");
-    //fprintf(fpt,"time, Np, Nc, N\n");
 
     fprintf(fpt, "%lf, %d, %d, %d\n", timeExecutionSeconds, Np, Nc, sizeN);
 
