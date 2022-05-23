@@ -185,7 +185,7 @@ int main(int argc, char* argv[]) {
 		list_threads[posNc] = threadWork;
 	}
 
-	for(int posNp=posNc; posNp < Np;posNp++){
+	for(int posNp=0; posNp < Np;posNp++){
 		pthread_create(&threadWork,NULL,Produtor,NULL);
 		list_threads[posNp] = threadWork;
 	}
@@ -201,6 +201,7 @@ int main(int argc, char* argv[]) {
     fpt = fopen("Results.csv", "a+");
 
     fprintf(fpt, "%lf, %d, %d, %d\n", timeExecutionSeconds, Np, Nc, sizeN);
+
 
     fclose(fpt);
 

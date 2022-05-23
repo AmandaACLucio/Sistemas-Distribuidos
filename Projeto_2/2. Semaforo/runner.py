@@ -17,6 +17,8 @@ def Execution_Semafore(repeticoes, values_Np_Nc, sizeN):
         writer = csv.writer(f)
         writer.writerow(["time", "Np", "Nc", "N"])
 
+    f.close();
+
     for j in range(repeticoes):
         for N in sizeN:
             for value_th in values_Np_Nc:
