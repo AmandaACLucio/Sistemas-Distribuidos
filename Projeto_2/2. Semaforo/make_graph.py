@@ -19,9 +19,7 @@ def dataframe_csv(data_file):
     df['graph_index'] = df.apply(lambda x: choose_tuple(
         np=x['Np'], nc=x['Nc']), axis=1)
 
-    df['graph_index'] = df.apply(lambda x: (x['Np'])/(x['Nc']), axis=1)
-
-    print(df)
+    df['graph_index'] = df.apply(lambda x: "("+str(x['Np'])+","+str(x['Nc'])+")", axis=1)
 
     return df
 
@@ -34,7 +32,7 @@ def build_graph(df):
 
     fig = df.pivot(index='graph_index', columns='N',
                    values='time').plot(title="Número de Threads x Tempo")
-    fig.set_xlabel("Np/Ns")
+    fig.set_xlabel("Np, Ns")
     fig.set_ylabel("Tempo (s)")
     return fig
 
