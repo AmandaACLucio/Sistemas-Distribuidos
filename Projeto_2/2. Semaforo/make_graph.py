@@ -19,8 +19,11 @@ def dataframe_csv(data_file):
     df['graph_index'] = df.apply(lambda x: choose_tuple(
         np=x['Np'], nc=x['Nc']), axis=1)
 
-    return df
+    df['graph_index'] = df.apply(lambda x: (x['Np'])/(x['Nc']), axis=1)
 
+    print(df)
+
+    return df
 
 def save_graph(image, name):
 
