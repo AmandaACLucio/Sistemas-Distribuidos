@@ -37,8 +37,8 @@ func main() {
 
 //--------------------Gera números aleatórios
 func gerarNumerosAleatorios(numerosAleatorios *[n]int) {
-	min := 0
-	max := 50
+	min := -100
+	max := 100
 	for i := 0; i < n; i++ {
 		numerosAleatorios[i] += (rand.Intn(max-min) + min)
 		//fmt.Println("int: ", numerosAleatorios[i])
