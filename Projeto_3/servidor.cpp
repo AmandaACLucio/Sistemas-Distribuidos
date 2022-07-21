@@ -13,6 +13,7 @@
 
 using namespace std;
 std::mutex mutex_queue;
+int n = 5;
 void writeFile(string client, string messages){
 // Create and open a text file
   ofstream MyFile("log.txt");
@@ -80,7 +81,7 @@ void writeFile(string client, string messages){
  
     // Fechar o  socket
     close(clientSocket);
-    //return ;
+    return 0;
 }
 void *newSocket( void *ptr)
 {
@@ -104,18 +105,25 @@ void *newSocket( void *ptr)
     listen(listening, SOMAXCONN);
 
     pthread_t thread2, thread3;
+    pthread_t id[4];
     //char *message1 = "primeira thread\n";
     int *plistem = (int*) malloc(sizeof(int));
     *plistem = listening;
-    int algo = pthread_create( &thread2, NULL, handle_connection,plistem);
+    for (size_t i = 0; i < n; i++)
+    {
+        int algo = pthread_create( &id[i], NULL, handle_connection,plistem);
+    }
+    
+    //int algo = pthread_create( &thread2, NULL, handle_connection,plistem);
     handle_connection(plistem);
+    return 0;
 }
 
 
  
 int main()
 {
-    int n = 2; //processos
+    //int n = 2; //processos
     int r = 10; //repetições
     int k = 2; //
     queue<string> mensagens = queue<string>();
