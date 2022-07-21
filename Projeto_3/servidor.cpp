@@ -13,7 +13,10 @@
 
 using namespace std;
 std::mutex mutex_queue;
-int n = 5;
+int n = 5;  //processos
+int r = 10; //repetições
+int k = 2;  //segundos
+
 void writeFile(string client, string messages){
 // Create and open a text file
   ofstream MyFile("log.txt");
@@ -60,7 +63,10 @@ void writeFile(string client, string messages){
         memset(buf, 0, 4096); //limpa o buffer
         // Aguarde o cliente enviar dados
         int bytesReceived = recv(clientSocket, buf, 4096, 0);
-        
+
+        // if(0 == strcmp(buf, "GRANT")){
+        //     printf("POSITIVO");
+        // }
         // printf("%s", buf);
 
         if (bytesReceived == -1)
@@ -118,14 +124,9 @@ void *newSocket( void *ptr)
     handle_connection(plistem);
     return 0;
 }
-
-
  
 int main()
 {
-    //int n = 2; //processos
-    int r = 10; //repetições
-    int k = 2; //
     queue<string> mensagens = queue<string>();
     pthread_t thread1,thread2;
     //char *message1 = "primeira thread\n";
@@ -161,6 +162,9 @@ int main()
 
         }else if (op == 3){
 
+        }
+        else{
+            std::cout << "Informe uma entrada valida" << " \n";
         }
     }
     return 0;
