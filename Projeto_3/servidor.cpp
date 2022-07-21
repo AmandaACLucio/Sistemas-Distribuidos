@@ -13,6 +13,7 @@
 
 using namespace std;
 std::mutex mutex_queue;
+int n = 5;
 void writeFile(string client, string messages){
 // Create and open a text file
   ofstream MyFile("log.txt");
@@ -24,27 +25,8 @@ void writeFile(string client, string messages){
   MyFile.close();
 }
 
-void *newSocket( void *ptr)
-{
-// Criar um soquete
-    int listening = socket(AF_INET, SOCK_STREAM, 0);
-    if (listening == -1)
-    {
-        cerr << "Can't create a socket! Quitting" << endl;
-        //return;
-    }
- 
-    // Vincule o endereço IP e a porta a um soquete
-    sockaddr_in hint;
-    hint.sin_family = AF_INET;
-    hint.sin_port = htons(54000);
-    inet_pton(AF_INET, "0.0.0.0", &hint.sin_addr);
- 
-    bind(listening, (sockaddr*)&hint, sizeof(hint));
- 
-    // Diga ao Winsock que o soquete é para ouvir
-    listen(listening, SOMAXCONN);
- 
+ void *handle_connection(void* p_listening){
+    int listening = *((int*)p_listening);
     // Aguarde uma conexão
     sockaddr_in client;
     socklen_t clientSize = sizeof(client);
@@ -78,6 +60,8 @@ void *newSocket( void *ptr)
         memset(buf, 0, 4096); //limpa o buffer
         // Aguarde o cliente enviar dados
         int bytesReceived = recv(clientSocket, buf, 4096, 0);
+        
+        // printf("%s", buf);
 
         if (bytesReceived == -1)
         {
@@ -97,16 +81,56 @@ void *newSocket( void *ptr)
  
     // Fechar o  socket
     close(clientSocket);
-    //return ;
+    return 0;
 }
+void *newSocket( void *ptr)
+{
+// Criar um soquete
+    int listening = socket(AF_INET, SOCK_STREAM, 0);
+    if (listening == -1)
+    {
+        cerr << "Can't create a socket! Quitting" << endl;
+        //return;
+    }
+ 
+    // Vincule o endereço IP e a porta a um soquete
+    sockaddr_in hint;
+    hint.sin_family = AF_INET;
+    hint.sin_port = htons(54000);
+    inet_pton(AF_INET, "0.0.0.0", &hint.sin_addr);
+ 
+    bind(listening, (sockaddr*)&hint, sizeof(hint));
+ 
+    // Diga ao Winsock que o soquete é para ouvir
+    listen(listening, SOMAXCONN);
+
+    pthread_t thread2, thread3;
+    pthread_t id[4];
+    //char *message1 = "primeira thread\n";
+    int *plistem = (int*) malloc(sizeof(int));
+    *plistem = listening;
+    for (size_t i = 0; i < n; i++)
+    {
+        int algo = pthread_create( &id[i], NULL, handle_connection,plistem);
+    }
+    
+    //int algo = pthread_create( &thread2, NULL, handle_connection,plistem);
+    handle_connection(plistem);
+    return 0;
+}
+
 
  
 int main()
 {
+    //int n = 2; //processos
+    int r = 10; //repetições
+    int k = 2; //
     queue<string> mensagens = queue<string>();
-    pthread_t thread1;
+    pthread_t thread1,thread2;
     //char *message1 = "primeira thread\n";
     int algo = pthread_create( &thread1, NULL, newSocket,NULL);
+    //int algo2 = pthread_create( &thread2, NULL, newSocket,NULL);
     //newSocket();
     int op = 0;
     writeFile("teste ", "| teste realizado");
