@@ -87,7 +87,9 @@ void *newSocket( void *ptr)
     close(clientSocket);
     //return ;
 }
-
+int escrever(){
+    
+}
  
 int main()
 {
