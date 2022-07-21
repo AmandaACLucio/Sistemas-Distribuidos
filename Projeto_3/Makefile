@@ -11,7 +11,7 @@ TARGET = client
 all: $(TARGET)
 
 $(TARGET): $(TARGET).cpp
-	$(CC) $(CFLAGS) -o $(TARGET) $(TARGET).cpp
+	$(CC) $(CFLAGS) -o $(TARGET) $(TARGET).cpp -pthread
 
 clean:
 	$(RM) $(TARGET)
