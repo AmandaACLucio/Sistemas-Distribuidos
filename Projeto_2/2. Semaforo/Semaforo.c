@@ -138,7 +138,6 @@ void UnloadMemory(){
 int main(int argc, char* argv[]) {
 
     srand(time(NULL));
-    int totalThreads;
 
     //console
     /*
@@ -154,7 +153,7 @@ int main(int argc, char* argv[]) {
     scanf("%d", &sizeN);
     */
 
-
+    int totalThreads;
 	sizeN = atoi(argv[1]); // tamanho de N
 	int Nc = atoi(argv[2]);  // número de threads do consumidor
 	int Np = atoi(argv[3]);  // número de threads do produtor
@@ -200,7 +199,7 @@ int main(int argc, char* argv[]) {
     FILE *fpt;
     fpt = fopen("Results.csv", "a+");
 
-    fprintf(fpt, "%lf, %d, %d, %d\n", timeExecutionSeconds, Np, Nc, sizeN);
+    fprintf(fpt, "%lf,%d,%d,%d\n", timeExecutionSeconds, Np, Nc, sizeN);
 
 
     fclose(fpt);
