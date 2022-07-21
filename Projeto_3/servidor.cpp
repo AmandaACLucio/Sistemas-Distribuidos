@@ -9,9 +9,21 @@
 #include <pthread.h>
 #include <queue>
 #include <mutex>
+#include <fstream>
 
 using namespace std;
 std::mutex mutex_queue;
+void writeFile(string client, string messages){
+// Create and open a text file
+  ofstream MyFile("log.txt");
+
+  // Write to the file
+  MyFile << client + messages;
+
+  // Close the file
+  MyFile.close();
+}
+
 void *newSocket( void *ptr)
 {
 // Criar um soquete
@@ -87,9 +99,7 @@ void *newSocket( void *ptr)
     close(clientSocket);
     //return ;
 }
-int escrever(){
-    
-}
+
  
 int main()
 {
@@ -99,6 +109,7 @@ int main()
     int algo = pthread_create( &thread1, NULL, newSocket,NULL);
     //newSocket();
     int op = 0;
+    writeFile("teste ", "| teste realizado");
     while(1){
         mensagens.push("client 1 ");
         mensagens.push("client 8 ");
