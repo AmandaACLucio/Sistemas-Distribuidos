@@ -73,15 +73,16 @@ int connectSocket()
 int request(char* buffer, char* PIDserver, int sock)
 {
 	int valueRead;
-
-	strncpy(buffer, "1|\0", 1024);
+// char buf[4096];
+	strncpy(buffer, "REQUEST|\0", 1024);
 	strcat(buffer,PIDserver);
 
 	dprintf(1,"Enviando mensagem %s\n",buffer);
 
 	send(sock , buffer , 1024 , 0 ); 
 	valueRead = read(sock , buffer, 1024);
-
+	//printf("----------------");
+	// cout << string(buf, 0, buffer) << endl;
 	if(valueRead == 0 )
 	{	
 		dprintf(1,"Problem in value read\n");

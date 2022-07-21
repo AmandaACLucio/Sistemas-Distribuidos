@@ -10,10 +10,14 @@
 #include <queue>
 #include <mutex>
 #include <fstream>
+#include <bits/stdc++.h>
 
 using namespace std;
 std::mutex mutex_queue;
-int n = 5;
+// int n = 5;
+// //int n = 2; //processos
+// int r = 10; //repetições
+// int k = 2; //
 void writeFile(string client, string messages){
 // Create and open a text file
   ofstream MyFile("log.txt");
@@ -74,7 +78,11 @@ void writeFile(string client, string messages){
             break;
         }
         cout << string(buf, 0, bytesReceived) << endl;
- 
+        string(buf, 0, bytesReceived).find("REQUEST")
+        if(string(buf, 0, bytesReceived) == "REQUEST")
+        {
+           cout << "00"; 
+        }
         // Echo Mensagem de eco de volta ao cliente
         send(clientSocket, buf, bytesReceived + 1, 0);
     }
@@ -123,9 +131,7 @@ void *newSocket( void *ptr)
  
 int main()
 {
-    //int n = 2; //processos
-    int r = 10; //repetições
-    int k = 2; //
+ 
     queue<string> mensagens = queue<string>();
     pthread_t thread1,thread2;
     //char *message1 = "primeira thread\n";
