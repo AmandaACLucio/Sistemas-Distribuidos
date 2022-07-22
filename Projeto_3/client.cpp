@@ -67,7 +67,7 @@ int connectSocket()
 	return sock;
 }
 
-int request(char* buffer, char* PIDserver, int sock)
+int request(char* buffer, char* PIDserver, int sock,int k)
 {
 	int valueRead;
 
@@ -83,7 +83,7 @@ int request(char* buffer, char* PIDserver, int sock)
 	if(string(buffer, 0, valueRead).find("GRANT") != -1)
 	{
 		writeFile(std::to_string(sock), "");
-		sleep(1);
+		sleep(k);
 		strncpy(buffer, "RELEASE|\0", 1024);
 		send(sock , buffer , 1024 , 0 ); 
 	}
@@ -101,7 +101,7 @@ int request(char* buffer, char* PIDserver, int sock)
 	return 0;
 }
 
-void release(char* buffer,char* PIDserver,int sock)
+void release(char* buffer,char* PIDserver,int sock, int k)
 {
 	strncpy(buffer, "3|\0",1024);
 	strcat(buffer, PIDserver);
@@ -117,11 +117,11 @@ void createRequests(int countProcess,char* buffer,char* PIDserver,int sock,int p
 	int sucess;
 	for(int j=0;j<countProcess;j++)	
 	{
-		sucess = request(buffer,PIDserver,sock);
+		sucess = request(buffer,PIDserver,sock, pointerBuffer);
 		if(sucess)
 		{
 			writeFile(PIDserver, to_string(pointerBuffer));
-			release(buffer, PIDserver, sock);
+			release(buffer, PIDserver, sock, pointerBuffer);
 		}
 	}
 	close(sock);

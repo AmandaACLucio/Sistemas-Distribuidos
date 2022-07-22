@@ -16,7 +16,7 @@ using namespace std;
 std::mutex mutex_queue;
 std::mutex mutex_processos;
 
-int n = 3;  //processos
+int n = 100;  //processos
 int r = 10; //repetições
 int k = 2;  //segundos
 
@@ -25,12 +25,21 @@ void writeFile(string client, string messages){
   ofstream MyFile("log.txt", std::ios::app);
 
   // Write to the file
-  MyFile << client + "|" + messages << "\n";
+  MyFile << client +  messages << "\n";
 
   // Close the file
   MyFile.close();
 }
-
+void readFile(){
+    string myText;
+    ifstream MyReadFile("log.txt");
+    while (getline (MyReadFile, myText)) {
+        // Output the text from the file
+        cout << myText << endl;
+    }
+    // Close the file
+    MyReadFile.close();
+}
  void *handle_connection(void* p_listening){
     int listening = *((int*)p_listening);
     // Aguarde uma conexão
@@ -156,20 +165,14 @@ int main()
 
         if (op == 1)
         {
-            // mutex_queue.lock();
-            // queue <string> cop = mensagens;
-            // mutex_queue.unlock();
-            // while (!cop.empty())
-            // {
-            //     std::cout << cop.front() << " \n";
-            //     cop.pop();
-            // }
-            /* code */
+            mutex_queue.lock();
+            readFile();
+            mutex_queue.unlock();
         }else if (op == 2)
         {
 
         }else if (op == 3){
-
+            exit(1);
         }
         else{
             std::cout << "Informe uma entrada valida" << " \n";
