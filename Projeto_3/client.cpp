@@ -32,14 +32,6 @@ void writeFile(string client, string messages){
 	
 }
 
-string valueTimeinfo()
-{
-    time_t tmp;
-	time ( &tmp );
-	struct tm * timeinfo = localtime ( &tmp );
-	return asctime (timeinfo);
-}
-
 int connectSocket()
 {
 	int sock = 0; 
@@ -78,7 +70,7 @@ int connectSocket()
 int request(char* buffer, char* PIDserver, int sock)
 {
 	int valueRead;
-// char buf[4096];
+
 	strncpy(buffer, "REQUEST|\0", 1024);
 	strcat(buffer,PIDserver);
 
@@ -86,7 +78,7 @@ int request(char* buffer, char* PIDserver, int sock)
 
 	send(sock , buffer , 1024 , 0 ); 
 	valueRead = read(sock , buffer, 1024);
-	//printf("----------------");
+
 	cout << "Resposta: " << string(buffer, 0, valueRead) << endl;
 	if(string(buffer, 0, valueRead).find("GRANT") != -1)
 	{
@@ -148,7 +140,6 @@ int main(int argc, char const *argv[])
   	int k = atoi(argv[3]); //tempo de espera
 
 	vector<int> pids;
-  	//int *pids = malloc(n*sizeof(int));
 
 	for (int i = 0; i < n; i++)
   	{
@@ -172,7 +163,6 @@ int main(int argc, char const *argv[])
 	}
 
     int response;
-	//int pid;
     
 	while (n > 0)
 	{
