@@ -14,7 +14,7 @@
 
 using namespace std;
 std::mutex mutex_queue;
-std::mutex mutex_write;
+std::mutex mutex_processos;
 
 int n = 5;  //processos
 int r = 10; //repetições
@@ -84,10 +84,14 @@ void writeFile(string client, string messages){
            writeFile(string(buf, 0, bytesReceived),"");
            mutex_queue.unlock();
            char new_buf[1024];
+           char new_buf2[1024];
+           mutex_processos.lock();
            strncpy(new_buf, "GRANT|\0", 1024);
            cout << (string(new_buf, 0, bytesReceived));
            send(clientSocket, new_buf, bytesReceived + 1, 0);
-
+           int bytesReceived2 = recv(clientSocket, new_buf2, 4096, 0);
+           cout << "esperando release: " << (string(new_buf2, 0, bytesReceived2));
+           mutex_processos.unlock();
         }             
         // Echo Mensagem de eco de volta ao cliente
         //send(clientSocket, buf, bytesReceived + 1, 0);

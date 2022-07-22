@@ -12,19 +12,24 @@
 #include <sys/socket.h>
 #include <netdb.h>
 #include <arpa/inet.h>
+#include <unistd.h>
+#include <chrono>
 
 #define PORT 54000 
 using namespace std;
 
 void writeFile(string client, string messages){
 	// Create and open a text file
-	ofstream MyFile("log.txt");
+	ofstream MyFile("resultado.txt");
+	const auto p1 = std::chrono::system_clock::now();
 
 	// Write to the file
-	MyFile << client + messages;
+	MyFile << client + "|"  << std::chrono::duration_cast<std::chrono::seconds>(
+                   p1.time_since_epoch()).count();
 
 	// Close the file
 	MyFile.close();
+	
 }
 
 string valueTimeinfo()
@@ -83,6 +88,14 @@ int request(char* buffer, char* PIDserver, int sock)
 	valueRead = read(sock , buffer, 1024);
 	//printf("----------------");
 	cout << "Resposta: " << string(buffer, 0, valueRead) << endl;
+	if(string(buffer, 0, valueRead).find("GRANT") != -1)
+	{
+		writeFile(std::to_string(sock), "");
+		sleep(1);
+		strncpy(buffer, "RELEASE|\0", 1024);
+		send(sock , buffer , 1024 , 0 ); 
+	}
+	
 	if(valueRead == 0 )
 	{	
 		dprintf(1,"Problem in value read\n");
