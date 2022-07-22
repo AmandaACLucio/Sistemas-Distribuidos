@@ -82,7 +82,7 @@ int request(char* buffer, char* PIDserver, int sock)
 	send(sock , buffer , 1024 , 0 ); 
 	valueRead = read(sock , buffer, 1024);
 	//printf("----------------");
-	// cout << string(buf, 0, buffer) << endl;
+	cout << "Resposta: " << string(buffer, 0, valueRead) << endl;
 	if(valueRead == 0 )
 	{	
 		dprintf(1,"Problem in value read\n");

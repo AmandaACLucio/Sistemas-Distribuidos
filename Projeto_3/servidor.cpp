@@ -14,23 +14,18 @@
 
 using namespace std;
 std::mutex mutex_queue;
-<<<<<<< HEAD
+std::mutex mutex_write;
+
 int n = 5;  //processos
 int r = 10; //repetições
 int k = 2;  //segundos
 
-=======
-// int n = 5;
-// //int n = 2; //processos
-// int r = 10; //repetições
-// int k = 2; //
->>>>>>> 67923d1f0779a78b19b9418bf4996546b3f5a301
 void writeFile(string client, string messages){
 // Create and open a text file
-  ofstream MyFile("log.txt");
+  ofstream MyFile("log.txt", std::ios::app);
 
   // Write to the file
-  MyFile << client + messages;
+  MyFile << client + "|" + messages << "\n";
 
   // Close the file
   MyFile.close();
@@ -72,11 +67,6 @@ void writeFile(string client, string messages){
         // Aguarde o cliente enviar dados
         int bytesReceived = recv(clientSocket, buf, 4096, 0);
 
-        // if(0 == strcmp(buf, "GRANT")){
-        //     printf("POSITIVO");
-        // }
-        // printf("%s", buf);
-
         if (bytesReceived == -1)
         {
             cerr << "Error in recv(). Quitting" << endl;
@@ -88,13 +78,19 @@ void writeFile(string client, string messages){
             break;
         }
         cout << string(buf, 0, bytesReceived) << endl;
-        string(buf, 0, bytesReceived).find("REQUEST")
-        if(string(buf, 0, bytesReceived) == "REQUEST")
+        if(string(buf, 0, bytesReceived).find("REQUEST") != -1)
         {
-           cout << "00"; 
-        }
+           mutex_queue.lock();
+           writeFile(string(buf, 0, bytesReceived),"");
+           mutex_queue.unlock();
+           char new_buf[1024];
+           strncpy(new_buf, "GRANT|\0", 1024);
+           cout << (string(new_buf, 0, bytesReceived));
+           send(clientSocket, new_buf, bytesReceived + 1, 0);
+
+        }             
         // Echo Mensagem de eco de volta ao cliente
-        send(clientSocket, buf, bytesReceived + 1, 0);
+        //send(clientSocket, buf, bytesReceived + 1, 0);
     }
  
     // Fechar o  socket
@@ -139,10 +135,6 @@ void *newSocket( void *ptr)
  
 int main()
 {
-<<<<<<< HEAD
-=======
- 
->>>>>>> 67923d1f0779a78b19b9418bf4996546b3f5a301
     queue<string> mensagens = queue<string>();
     pthread_t thread1,thread2;
     //char *message1 = "primeira thread\n";
@@ -150,7 +142,6 @@ int main()
     //int algo2 = pthread_create( &thread2, NULL, newSocket,NULL);
     //newSocket();
     int op = 0;
-    writeFile("teste ", "| teste realizado");
     while(1){
         mensagens.push("client 1 ");
         mensagens.push("client 8 ");
