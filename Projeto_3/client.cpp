@@ -20,12 +20,12 @@ using namespace std;
 
 void writeFile(string client, string messages){
 	// Create and open a text file
-	ofstream MyFile("resultado.txt");
+	ofstream MyFile("resultado.txt", std::ios::app);
 	const auto p1 = std::chrono::system_clock::now();
 
 	// Write to the file
 	MyFile << client + "|"  << std::chrono::duration_cast<std::chrono::seconds>(
-                   p1.time_since_epoch()).count();
+                   p1.time_since_epoch()).count() << "\n";
 
 	// Close the file
 	MyFile.close();

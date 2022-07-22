@@ -16,7 +16,7 @@ using namespace std;
 std::mutex mutex_queue;
 std::mutex mutex_processos;
 
-int n = 5;  //processos
+int n = 3;  //processos
 int r = 10; //repetições
 int k = 2;  //segundos
 
@@ -87,10 +87,12 @@ void writeFile(string client, string messages){
            char new_buf2[1024];
            mutex_processos.lock();
            strncpy(new_buf, "GRANT|\0", 1024);
-           cout << (string(new_buf, 0, bytesReceived));
+           writeFile(string(new_buf),std::to_string(bytesReceived));
+           cout << (string(new_buf, 0, bytesReceived)) << endl;
            send(clientSocket, new_buf, bytesReceived + 1, 0);
            int bytesReceived2 = recv(clientSocket, new_buf2, 4096, 0);
-           cout << "esperando release: " << (string(new_buf2, 0, bytesReceived2));
+           cout << "esperando release: " << (string(new_buf2, 0, bytesReceived2)) << endl;
+           writeFile(string(new_buf2),std::to_string(bytesReceived2));
            mutex_processos.unlock();
         }             
         // Echo Mensagem de eco de volta ao cliente
@@ -139,7 +141,6 @@ void *newSocket( void *ptr)
  
 int main()
 {
-    queue<string> mensagens = queue<string>();
     pthread_t thread1,thread2;
     //char *message1 = "primeira thread\n";
     int algo = pthread_create( &thread1, NULL, newSocket,NULL);
@@ -147,10 +148,6 @@ int main()
     //newSocket();
     int op = 0;
     while(1){
-        mensagens.push("client 1 ");
-        mensagens.push("client 8 ");
-        mensagens.push("client 3 ");
-        mensagens.push("client 2 ");
         printf("** Informe uma opcao: **\n \n");
         printf("1) imprimir a fila de pedidos atual \n");
         printf("2) imprimir quantas vezes cada processo foi atendido \n");
@@ -159,14 +156,14 @@ int main()
 
         if (op == 1)
         {
-            mutex_queue.lock();
-            queue <string> cop = mensagens;
-            mutex_queue.unlock();
-            while (!cop.empty())
-            {
-                std::cout << cop.front() << " \n";
-                cop.pop();
-            }
+            // mutex_queue.lock();
+            // queue <string> cop = mensagens;
+            // mutex_queue.unlock();
+            // while (!cop.empty())
+            // {
+            //     std::cout << cop.front() << " \n";
+            //     cop.pop();
+            // }
             /* code */
         }else if (op == 2)
         {
